@@ -1,10 +1,26 @@
+import kotlin.system.measureTimeMillis
+
 fun main() {
     val puzzleInput: List<String> = readInput("Day01.txt")
 
     partOneTest()
-
-    val partOneResult = partOne(puzzleInput)
+    val partOneResult: Int
+    val millisPartOne = measureTimeMillis {
+        partOneResult = partOne(puzzleInput)
+    }
     println(partOneResult)
+    println("Time millis: $millisPartOne")
+
+    println("----------")
+
+    partTwoTest()
+    val partTwoResult: Int
+    val millisPartTwo = measureTimeMillis {
+        partTwoResult = partTwo(puzzleInput)
+    }
+
+    println(partTwoResult)
+    println("Time millis: $millisPartTwo")
 }
 
 private fun partOne(puzzleInput: List<String>) =
@@ -21,18 +37,27 @@ private fun partOneTest() {
 }
 
 private val wordToInt = mapOf(
-    "one" to 1,
-    "two" to 2,
-    "three" to 3,
-    "four" to 4,
-    "five" to 5,
-    "six" to 6,
-    "seven" to 7,
-    "eight" to 8,
-    "nine" to 9
+    "one" to "1",
+    "two" to "2",
+    "three" to "3",
+    "four" to "4",
+    "five" to "5",
+    "six" to "6",
+    "seven" to "7",
+    "eight" to "8",
+    "nine" to "9"
 )
 private fun partTwo(puzzleInput: List<String>): Int {
-    TODO()
+    val numberList: Set<String> = wordToInt.keys + wordToInt.values
+    return puzzleInput.sumOf {
+        val first: String = it.findAnyOf(numberList)!!.second
+        val last: String = it.findLastAnyOf(numberList)!!.second
+
+        val firstInt: Int = wordToInt[first]?.toInt() ?: first.toInt()
+        val lastInt: Int = wordToInt[last]?.toInt() ?: last.toInt()
+
+        "$firstInt$lastInt".toInt()
+    }
 }
 
 
