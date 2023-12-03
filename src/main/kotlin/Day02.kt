@@ -3,8 +3,11 @@ fun main() {
 
     testPartOne()
     val partOneResult: Int = partOne(puzzleInput)
-    println(partOneResult)
+    println("Part one: $partOneResult")
 
+    testPartTwo()
+    val partTwoResult: Int = partTwo(puzzleInput)
+    println("Part two: $partTwoResult")
 }
 
 private fun partOne(puzzleInput: List<String>): Int {
@@ -31,6 +34,23 @@ private fun partOne(puzzleInput: List<String>): Int {
     }
 }
 
+private fun partTwo(puzzleInput: List<String>): Int =
+    puzzleInput.sumOf { game ->
+        val parsedGame: List<Map<String, Int>> = parseGame(game)
+        val maxByColor = mutableMapOf<String, Int>()
+
+        parsedGame.forEach { round ->
+            round.entries.forEach { (color, number) ->
+                val max: Int = maxByColor[color] ?: 0
+                if (max < number) {
+                    maxByColor[color] = number
+                }
+            }
+        }
+
+        maxByColor.values.reduce { acc, elem -> acc * elem }
+    }
+
 /* Parse a game to the following format:
 * Each element in the returned list represents A ROUND in the game (rounds are separated by semicolons).
 * Each key in the map represents A COLOR in the given round, with the value being the NUMBER OF the given color.
@@ -50,16 +70,20 @@ private fun parseGame(game: String): List<Map<String, Int>> {
 private fun getGameId(game: String): Int =
     game.split(":").first().split(" ").last().toInt()
 
+val examplePuzzleInput: List<String> = listOf(
+    "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green",
+    "Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue",
+    "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red",
+    "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red",
+    "Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
+)
 
 private fun testPartOne() {
-    val puzzleInput: List<String> = listOf(
-        "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green",
-        "Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue",
-        "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red",
-        "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red",
-        "Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
-    )
-
-    val testResult = partOne(puzzleInput)
+    val testResult = partOne(examplePuzzleInput)
     assert(testResult == 8)
+}
+
+private fun testPartTwo() {
+    val testResult = partTwo(examplePuzzleInput)
+    assert(testResult == 2286)
 }
