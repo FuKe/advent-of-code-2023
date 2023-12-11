@@ -5,6 +5,7 @@ fun main() {
     val partOneResult: Int = partOne(puzzleInput)
     println("Part one: $partOneResult")
 
+    testPartTwo()
 }
 
 private fun partOne(puzzleInput: List<String>): Int {
@@ -29,12 +30,46 @@ private fun partOne(puzzleInput: List<String>): Int {
 
             if (relevantLookupChunks.any { specialCharRegex.find(it) != null }) {
                 val number: Int = optNumberMatch.value.toInt()
-                println("Adding $number")
                 sum += number
             }
             optNumberMatch = optNumberMatch.next()
         }
     }
+
+    return sum
+}
+
+private fun partTwo(puzzleInput: List<String>): Int {
+    var sum = 0
+
+    val gearRegex = Regex("\\*")
+    val numberRegex = Regex("\\d+")
+
+    puzzleInput.forEachIndexed { index, s ->
+        var optGearMatch: MatchResult? = gearRegex.find(s)
+
+        while (optGearMatch != null) {
+            val minLookupIndex = (optGearMatch.range.first - 3).coerceAtLeast(0)
+            val maxLookupIndex = (optGearMatch.range.last + 4).coerceAtMost(s.length - 1)
+
+            val relevantLookupChunks: List<String> = when (index) {
+                0 -> listOf(puzzleInput[1])
+                puzzleInput.size-1 -> listOf(puzzleInput[index-1])
+                else -> listOf(puzzleInput[index-1], puzzleInput[index+1])
+            }.map{
+                it.substring(minLookupIndex, maxLookupIndex)
+            }.plus(s.substring(minLookupIndex, maxLookupIndex))
+
+            if (relevantLookupChunks.size > 1) {
+                sum += relevantLookupChunks.sumOf {
+                    numberRegex.find(it)?.value?.toInt() ?: 0
+                }
+            }
+
+            optGearMatch = optGearMatch.next()
+        }
+    }
+
 
     return sum
 }
@@ -55,4 +90,9 @@ private val examplePuzzleInput = listOf(
 private fun testPartOne() {
     val testResult = partOne(examplePuzzleInput)
     assert(testResult == 4361) { "Test result was: $testResult" }
+}
+
+private fun testPartTwo() {
+    val testResult = partTwo(examplePuzzleInput)
+    assert(testResult == 467835) { "Test result was: $testResult" }
 }
