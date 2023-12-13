@@ -6,6 +6,8 @@ fun main() {
     println("Part one: $partOneResult")
 
     testPartTwo()
+    val partTwoResult: Int = partTwo(puzzleInput)
+    println("Part two: $partTwoResult")
 }
 
 private fun partOne(puzzleInput: List<String>): Int {
@@ -49,21 +51,26 @@ private fun partTwo(puzzleInput: List<String>): Int {
         var optGearMatch: MatchResult? = gearRegex.find(s)
 
         while (optGearMatch != null) {
-            val minLookupIndex = (optGearMatch.range.first - 3).coerceAtLeast(0)
-            val maxLookupIndex = (optGearMatch.range.last + 4).coerceAtMost(s.length - 1)
+            val gearIndex: Int = optGearMatch.range.first
 
-            val relevantLookupChunks: List<String> = when (index) {
-                0 -> listOf(puzzleInput[1])
-                puzzleInput.size-1 -> listOf(puzzleInput[index-1])
-                else -> listOf(puzzleInput[index-1], puzzleInput[index+1])
-            }.map{
-                it.substring(minLookupIndex, maxLookupIndex)
-            }.plus(s.substring(minLookupIndex, maxLookupIndex))
-
-            if (relevantLookupChunks.size > 1) {
-                sum += relevantLookupChunks.sumOf {
-                    numberRegex.find(it)?.value?.toInt() ?: 0
+            val numbers = when (index) {
+                0 -> listOf(puzzleInput[1], s)
+                puzzleInput.size-1 -> listOf(puzzleInput[index-1], s)
+                else -> listOf(puzzleInput[index-1], puzzleInput[index+1], s)
+            }.flatMap {
+                val result = mutableListOf<Int>()
+                val numberMatches = numberRegex.findAll(it).iterator()
+                while (numberMatches.hasNext()) {
+                    val match = numberMatches.next()
+                    if (match.range.contains(gearIndex) || match.range.contains(gearIndex-1) || match.range.contains(gearIndex+1)) {
+                        result += match.value.toInt()
+                    }
                 }
+                result
+            }
+
+            if (numbers.size == 2) {
+                sum += numbers.first() * numbers.last()
             }
 
             optGearMatch = optGearMatch.next()
