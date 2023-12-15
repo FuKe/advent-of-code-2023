@@ -13,8 +13,9 @@ fun main() {
 }
 
 private fun partOne(puzzleInput: List<String>): Long {
-    val parsedCards: List<Pair<List<Int>, List<Int>>> = parseCards(puzzleInput)
-    return parsedCards.sumOf { (winningNumbers, myNumbers) ->
+    val parsedCards: Map<Int, Pair<List<Int>, List<Int>>> = parseCards(puzzleInput)
+
+    return parsedCards.values.sumOf { (winningNumbers, myNumbers) ->
         val x = myNumbers.count {
             it in winningNumbers
         } - 1
@@ -26,16 +27,21 @@ private fun partTwo(puzzleInput: List<String>): Int {
     return 0
 }
 
-private fun parseCards(puzzleInput: List<String>): List<Pair<List<Int>, List<Int>>> =
-    puzzleInput.map {
-        val (left, right) = it.split(":").last().split("|")
-        val winningNumbers: List<Int> = left.split(" ")
+private fun parseCards(puzzleInput: List<String>): Map<Int, Pair<List<Int>, List<Int>>> =
+    puzzleInput.associate {
+        val (cardNumStr, numbers) = it.split(":")
+
+        val cardNum: Int = cardNumStr.split(" ").last().toInt()
+
+        val (leftNumberStr, rightNumberStr) = numbers.split("|")
+        val winningNumbers: List<Int> = leftNumberStr.split(" ")
             .filter { numStr -> numStr.isNotBlank() }
             .map { numStr -> numStr.toInt() }
-        val myNumbers: List<Int> = right.split(" ")
+        val myNumbers: List<Int> = rightNumberStr.split(" ")
             .filter { numStr -> numStr.isNotBlank() }
             .map { numStr -> numStr.toInt() }
-        Pair(winningNumbers, myNumbers)
+
+        cardNum to Pair(winningNumbers, myNumbers)
     }
 
 private val exampleInput = listOf(
