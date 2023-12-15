@@ -6,8 +6,8 @@ fun main() {
     testPartOne()
     val partOneResult: Long = partOne(puzzleInput)
     println("Part one: $partOneResult")
-//
-//    testPartTwo()
+
+    testPartTwo()
 //    val partTwoResult: Int = partTwo(puzzleInput)
 //    println("Part two: $partTwoResult")
 }
@@ -24,7 +24,41 @@ private fun partOne(puzzleInput: List<String>): Long {
 }
 
 private fun partTwo(puzzleInput: List<String>): Int {
-    return 0
+    val parsedCards: Map<Int, Pair<List<Int>, List<Int>>> = parseCards(puzzleInput)
+    // val winsPerCard: MutableMap<Int, Int> = parsedCards.keys.associateWith { 0 }.toMutableMap()
+
+    val wins = countWinningCards(parsedCards)
+    return wins.values.sum()
+}
+
+private fun countWinningCards(
+    parsedCards: Map<Int, Pair<List<Int>, List<Int>>>
+): MutableMap<Int, Int> {
+    val winsPerCard: MutableMap<Int, Int> = mutableMapOf()
+    parsedCards.forEach { cardNum, (winningNumbers, myNumbers) ->
+        val numWinningNumbers = myNumbers.count { it in winningNumbers }
+        println("$numWinningNumbers winning numbers found on card $cardNum (${parsedCards.size} cards on hand)")
+        if (numWinningNumbers > 0) {
+            winsPerCard[cardNum] = (winsPerCard[cardNum] ?: 0) + 1
+
+            val nextMin = cardNum + 1
+            val nextMax = cardNum + numWinningNumbers
+
+            val copies = parsedCards.filter {
+                it.key in nextMin..nextMax
+            }
+
+            if (copies.isNotEmpty()) {
+                val winningCards = countWinningCards(copies)
+                winningCards.forEach { (t, u) ->
+                    println("Adding 1 win to $t")
+                    winsPerCard[t] = (winsPerCard[t] ?: 0) + 1
+                }
+            }
+        }
+    }
+
+    return winsPerCard
 }
 
 private fun parseCards(puzzleInput: List<String>): Map<Int, Pair<List<Int>, List<Int>>> =
@@ -58,5 +92,6 @@ private fun testPartOne() {
 }
 
 private fun testPartTwo() {
-
+    val testResult = partTwo(exampleInput)
+    assert(testResult == 30) { "Test result of partTwo was: $testResult" }
 }
