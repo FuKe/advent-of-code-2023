@@ -8,8 +8,8 @@ fun main() {
     println("Part one: $partOneResult")
 
     testPartTwo()
-//    val partTwoResult: Int = partTwo(puzzleInput)
-//    println("Part two: $partTwoResult")
+    val partTwoResult: Int = partTwo(puzzleInput)
+    println("Part two: $partTwoResult")
 }
 
 private fun partOne(puzzleInput: List<String>): Long {
@@ -25,40 +25,42 @@ private fun partOne(puzzleInput: List<String>): Long {
 
 private fun partTwo(puzzleInput: List<String>): Int {
     val parsedCards: Map<Int, Pair<List<Int>, List<Int>>> = parseCards(puzzleInput)
-    // val winsPerCard: MutableMap<Int, Int> = parsedCards.keys.associateWith { 0 }.toMutableMap()
 
-    val wins = countWinningCards(parsedCards)
+    val wins = countScratchCards(parsedCards)
     return wins.values.sum()
 }
 
-private fun countWinningCards(
-    parsedCards: Map<Int, Pair<List<Int>, List<Int>>>
+private fun countScratchCards(
+    parsedCards: Map<Int, Pair<List<Int>, List<Int>>>, cardOffset: Int = 0, cardMax: Int = parsedCards.keys.max()
 ): MutableMap<Int, Int> {
-    val winsPerCard: MutableMap<Int, Int> = mutableMapOf()
+    val totalCards: MutableMap<Int, Int> = mutableMapOf()
+
     parsedCards.forEach { cardNum, (winningNumbers, myNumbers) ->
-        val numWinningNumbers = myNumbers.count { it in winningNumbers }
-        println("$numWinningNumbers winning numbers found on card $cardNum (${parsedCards.size} cards on hand)")
-        if (numWinningNumbers > 0) {
-            winsPerCard[cardNum] = (winsPerCard[cardNum] ?: 0) + 1
+        if (cardNum in cardOffset..cardMax) {
+            totalCards[cardNum] = (totalCards[cardNum] ?: 0) + 1
+            val numWinningNumbers = myNumbers.count { it in winningNumbers }
 
-            val nextMin = cardNum + 1
-            val nextMax = cardNum + numWinningNumbers
+            if (numWinningNumbers > 0) {
+                val nextMin = cardNum + 1
+                val nextMax = cardNum + numWinningNumbers
 
-            val copies = parsedCards.filter {
-                it.key in nextMin..nextMax
-            }
+                val copies = parsedCards.filter {
+                    it.key in nextMin .. nextMax
+                }
 
-            if (copies.isNotEmpty()) {
-                val winningCards = countWinningCards(copies)
-                winningCards.forEach { (t, u) ->
-                    println("Adding 1 win to $t")
-                    winsPerCard[t] = (winsPerCard[t] ?: 0) + 1
+                if (copies.isNotEmpty()) {
+                    val copiedCards = countScratchCards(parsedCards, copies.keys.min(), copies.keys.max())
+                    copiedCards.forEach { (t, u) ->
+                        // println("Got $u copies of card $t")
+                        totalCards[t] = (totalCards[t] ?: 0) + u
+                    }
                 }
             }
         }
+
     }
 
-    return winsPerCard
+    return totalCards
 }
 
 private fun parseCards(puzzleInput: List<String>): Map<Int, Pair<List<Int>, List<Int>>> =
